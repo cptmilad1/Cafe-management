@@ -6,7 +6,7 @@ async function getUsers(req,res,next) {
         const query = await pool.query(`SELECT * FROM users RETURNING *`)
         const users = query.rows[0]
         if(!users)return Report(404, "No user found!", res)
-        return Report(200, "User Data Fetched", users, res)
+        return Report(200, "User Data Fetched", query.rows, res)
     }catch(err){
         next(err)
     }
