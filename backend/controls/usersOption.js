@@ -25,7 +25,7 @@ function profile(req,res) {
 }
 
 function editUser(req,res) {
-        const query = crudFactory.patcth(req, 'users')
+        const query = crudFactory.patch(req, 'users')
         if(query.rowCount == 0) throw new AppError(402, "Cannot Update user!")
         return Report(201, "User Updated!", res)
 }

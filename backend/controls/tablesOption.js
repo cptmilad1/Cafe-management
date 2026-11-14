@@ -40,7 +40,7 @@ async function deleteTable(req,res) {
 async function changeTableStatus(req,res) {
         const {status} = req.body
         validatorColumns(status, ['available', 'occupied', 'reserved', 'inactive'])
-        const query = crudFactory.patcth(req, 'cafe_tables')
+        const query = crudFactory.patch(req, 'cafe_tables')
         if(query.rowCount == 0) throw new AppError(404, 'Cannot change status!')
         return Report(200, "Status changed!", res)
 }
