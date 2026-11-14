@@ -1,65 +1,48 @@
-const pool = require('../../database/base')
 const Report = require('../utils/reportSenter')
+const AppError = require('../utils/appError')
+const crudFactory = require('../factory/crudFactory')
+const validatorColumns = require('../utils/validBodyColumns')
 
-async function getTables(req,res,next) {
-    try{
-        const query = await pool.query(`SELECT * FROM cafe_tables RETURNING id, name, capacity, status, updated_at`)
-        if(query.rowCount == 0) return Report(404, "Can not sent tables details now!", res)
-        return Report(200, "Tables info Fetched!", query.rows, res)
-    }catch(err){
-        next(err)
-    }
-}
-
-async function addTable(req,res,next) {
-    try{
-        const {name, capacity, status} = req.body
-        const allowedStatus = ['available', 'occupied', 'reserved', 'inactive']
-        if(!status.includes(allowedStatus)) return Report(403, "Status not valid!", res)
-        const query = await pool.query(`INSERT INTO cafe_tables (name, capacity, status) VALUES('$1', '$2', '$3')`, [name, capacity, status])
-        if(query.rowCount == 0) return Report(404, "Cannot add table now", res)
-        return Report(201, "Table added!", res)
-}catch(err){
-    next(err)
-}
+function getTables(req,res) {
+        const query = crudFactory.get('cafe_tables')
+        const tables = query.rows.map((tables)=> ({
+                id : tables.id,
+                name : tables.name,
+                capacity : tables.capacity,
+                status : tables.status,
+                updated_at : tables.updated_at
+        }))
+        if(query.rowCount == 0) throw new AppError(404, "Can not sent tables details now!")
+        return Report(200, "Tables info Fetched!", {tables}, res)
 }
 
-async function editTable(req,res,next) {
-    try{
-        const {name, capacity, status} = req.body
-        const {id} = req.params
-        const allowedStatus = ['available', 'occupied', 'reserved', 'inactive']
-        if(!status.includes(allowedStatus)) return Report(403, "Status not valid!", res)
-        const query = await pool.query(`UPDATE cafe_tables SET name=$1, capacity=$2, status=$3 WHERE id=$4`, [name, capacity, status, id])
-        if(query.rowCount == 0) return Report(404, "Cannot edit table now", res)
-        return Report(201, "Table Updated!", res)
-    }catch(err){
-        next(err)
-    }
-}
-
-async function deleteTable(req,res,next) {
-    try{
-        const {id} = req.params
-        const query = pool.query(`DELETE FROM cafe_tables WHERE id=$1`, [id])
-        if(query.rowCount == 0) return Report(404, "Table not found or cannot Deleted!", res)
-        return Report(200, "Table Deleted!", res)
-    }catch(err){
-        next(err)
-    }
-}
-async function changeTableStatus(req,res,next) {
-    try{
+function addTable(req,res) {
         const {status} = req.body
-        const {id} = req.params
-        const allowedStatus = ['available', 'occupied', 'reserved', 'inactive']
-        if(!status.includes(allowedStatus)) return Report(403, "Status not valid!", res)
-        const query = await pool.query(`UPDATE cafe_tables SET status=$1 WHERE id=$2`, [status, id])
-        if(query.rowCount == 0)return Report(404, 'Cannot change status!', res)
+        validatorColumns(status, ['available', 'occupied', 'reserved', 'inactive'])
+        const query = crudFactory.post(req, 'cafe_tables')
+        if(query.rowCount == 0) throw new AppError(404, "Cannot add table now")
+        return Report(201, "Table added!", res)
+}
+
+async function editTable(req,res) {
+        const {status} = req.body
+        validatorColumns(status, ['available', 'occupied', 'reserved', 'inactive'])
+        const query = crudFactory.put(req, 'cafe_tables')
+        if(query.rowCount == 0) throw new AppError(404, "Cannot edit table now")
+        return Report(201, "Table Updated!", res)
+}
+
+async function deleteTable(req,res) {
+        const query = crudFactory.delete(req, 'cafe_tables')
+        if(query.rowCount == 0) throw new AppError(404, "Table not found or cannot Deleted!")
+                return Report(200, "Table Deleted!", res)
+}
+async function changeTableStatus(req,res) {
+        const {status} = req.body
+        validatorColumns(status, ['available', 'occupied', 'reserved', 'inactive'])
+        const query = crudFactory.patcth(req, 'cafe_tables')
+        if(query.rowCount == 0) throw new AppError(404, 'Cannot change status!')
         return Report(200, "Status changed!", res)
-    }catch(err){
-        next(err)
-    }
 }
 
 module.exports = {
