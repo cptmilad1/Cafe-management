@@ -1,25 +1,58 @@
 const pool = require('../../database/base/pool')
 const AppError = require('../utils/appError')
 
-function Validate(value){
-    if(value == false || null || undefined || -1){
-        throw new AppError(404, "Cannot find Valid Data!")
+const allowedTables = new Set([
+    'users',
+    'categories',
+    'products',
+    'cafe_tables',
+    'orders',
+    'order_items',
+    'payments'
+])
+
+function validateTableName(tableName) {
+    if(!allowedTables.has(tableName))
+        throw new AppError(400, 'Invalid table name!')
+}
+
+function validateId(id) {
+    if(typeof id !== 'string' || !/^[1-9]\d*$/.test(id))
+        throw new AppError(400, 'Please provide a valid id!')
+}
+
+function getEntries(body) {
+    if(body === null || typeof body !== 'object' || Array.isArray(body))
+        throw new AppError(400, 'Please provide valid data!')
+
+    const entries = Object.entries(body)
+    if(entries.length === 0)
+        throw new AppError(400, 'Please provide valid data!')
+
+    for(const [key] of entries) {
+        if(!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key))
+            throw new AppError(400, 'Invalid column name!')
     }
+
+    return entries
 }
 
 const crudFactory = {
-    get : async(tableName)=>{const query = await pool.query(`SELECT * FROM ${tableName}`)
+    get : async(tableName)=>{
+        validateTableName(tableName)
+        const query = await pool.query(`SELECT * FROM ${tableName}`)
         return query
     },
     getOne : async(req, tableName)=>{
+        validateTableName(tableName)
         const {id} = req.params
-        Validate(id)
+        validateId(id)
         const query = await pool.query(`SELECT * FROM ${tableName} WHERE id=$1`, [id])
         return query
     },
     post : async(req, tableName)=>{
-        const entries = Object.entries(req.body)
-        Validate(entries)
+        validateTableName(tableName)
+        const entries = getEntries(req.body)
         const keys = entries.map(([key])=>key)
         const values = entries.map(([, value])=>value)
         const columns = keys.join(', ')
@@ -29,30 +62,36 @@ const crudFactory = {
         return result
     },
     put : async(req, tableName)=>{
+        validateTableName(tableName)
         const {id} = req.params
-        const entries = Object.entries(req.body)
-        Validate(entries)
+        validateId(id)
+        const entries = getEntries(req.body)
         const keys = entries.map(([key])=>key)
         const values = entries.map(([, value])=>value)
+        values.push(id)
         const updates = keys.map((key, index)=>`${key}=$${index+1}`).join(", ")
-        const query = `UPDATE ${tableName} SET ${updates} WHERE id=${id}`
+        const query = `UPDATE ${tableName} SET ${updates} WHERE id=$${values.length}`
         const result = await pool.query(query, values)
         return result
     },
     delete : async(req, tableName)=>{
+        validateTableName(tableName)
         const {id} = req.params
-        Validate(id)
+        validateId(id)
         const query = await pool.query(`DELETE FROM ${tableName} WHERE id=$1`, [id])
         return query
     },
     patch : async(req, tableName)=>{
+        validateTableName(tableName)
         const {id} = req.params
-        const entries = Object.entries(req.body)
-        Validate(entries)
-        const key = entries.map(([key])=>key)
-        const value = entries.map(([value])=>value)
-        const query = `UPDATE ${tableName} SET ${key}='${value}' WHERE id=$1`
-        const result = await pool.query(query, [id])
+        validateId(id)
+        const entries = getEntries(req.body)
+        const keys = entries.map(([key])=>key)
+        const values = entries.map(([, value])=>value)
+        values.push(id)
+        const updates = keys.map((key, index)=>`${key}=$${index+1}`).join(", ")
+        const query = `UPDATE ${tableName} SET ${updates} WHERE id=$${values.length}`
+        const result = await pool.query(query, values)
         return result
     }
 }
