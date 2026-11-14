@@ -1,7 +1,7 @@
 require('dotenv').config();
 const pool = require('../../../database/base/pool');
 const signToken = require('../utils/signToken');
-const Report = require('../../utils/reportOption.js')
+const Report = require('../../utils/reportSenter')
 const insertToken = require('../utils/insertToken')
 const bcrypt = require('bcrypt');
 const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret_key";
