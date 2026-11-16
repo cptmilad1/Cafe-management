@@ -11,6 +11,11 @@ const allowedTables = new Set([
     'payments'
 ])
 
+async function dataInject(params){
+    if(params.rowCount == 0)
+        throw new AppError(501, 'Server Can not handle')
+}
+
 function validateTableName(tableName) {
     if(!allowedTables.has(tableName))
         throw new AppError(400, 'Invalid table name!')
@@ -41,14 +46,29 @@ const crudFactory = {
     get : async(tableName)=>{
         validateTableName(tableName)
         const query = await pool.query(`SELECT * FROM ${tableName}`)
-        return query
+        dataInject(query)
+        return query.rows
     },
     getOne : async(req, tableName)=>{
         validateTableName(tableName)
         const {id} = req.params
         validateId(id)
         const query = await pool.query(`SELECT * FROM ${tableName} WHERE id=$1`, [id])
-        return query
+        dataInject(query)
+        return query.rows[0]
+    },
+    getOneById : async(id, tableName)=>{
+        validateTableName(tableName)
+        validateId(id)
+        const query = await pool.query(`SELECT * FROM ${tableName} WHERE id=$1`, [id])
+        dataInject(query)
+        return query.rows[0]
+    },
+    getOneByName : async(name, tableName)=>{
+        validateTableName(tableName)
+        const query = await pool.query(`SELECT * FROM ${tableName} WHERE name=$1`, [name])
+        dataInject(query)
+        return query.rows[0]
     },
     post : async(req, tableName)=>{
         validateTableName(tableName)
@@ -59,6 +79,7 @@ const crudFactory = {
         const placeHolders = values.map((_,index)=> `$${index+1}`).join(", ")
         const query = `INSERT INTO ${tableName}(${columns}) VALUES (${placeHolders})`
         const result = await pool.query(query, values)
+        dataInject(result)
         return result
     },
     put : async(req, tableName)=>{
@@ -72,6 +93,7 @@ const crudFactory = {
         const updates = keys.map((key, index)=>`${key}=$${index+1}`).join(", ")
         const query = `UPDATE ${tableName} SET ${updates} WHERE id=$${values.length}`
         const result = await pool.query(query, values)
+        dataInject(result)
         return result
     },
     delete : async(req, tableName)=>{
@@ -79,6 +101,7 @@ const crudFactory = {
         const {id} = req.params
         validateId(id)
         const query = await pool.query(`DELETE FROM ${tableName} WHERE id=$1`, [id])
+        dataInject(query)
         return query
     },
     patch : async(req, tableName)=>{
@@ -92,6 +115,7 @@ const crudFactory = {
         const updates = keys.map((key, index)=>`${key}=$${index+1}`).join(", ")
         const query = `UPDATE ${tableName} SET ${updates} WHERE id=$${values.length}`
         const result = await pool.query(query, values)
+        dataInject(result)
         return result
     }
 }
