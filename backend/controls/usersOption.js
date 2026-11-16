@@ -5,14 +5,12 @@ const crudFactory = require('../factory/crudFactory.js')
 
 function getUsers(req,res) {
         const query = crudFactory.get('users')
-        const users = query.rows
-        if(!users) throw new AppError(404, "Any user not found!")
-        return Report(200, "User Data Fetched", query.rows, res)
+        return Report(200, "User Data Fetched", query, res)
 }
 
 function profile(req,res) {
         const query = crudFactory.getOne(req, 'users')
-        const user = query.rows[0].map((user)=>({
+        const user = query.map((user)=>({
                 id : user.id,
                 full_name : user.full_name,
                 email : user.email,
@@ -25,14 +23,12 @@ function profile(req,res) {
 }
 
 function editUser(req,res) {
-        const query = crudFactory.patch(req, 'users')
-        if(query.rowCount == 0) throw new AppError(402, "Cannot Update user!")
+        crudFactory.patch(req, 'users')
         return Report(201, "User Updated!", res)
 }
 
 function deleteUser(req,res) {
-        const query = crudFactory.delete(req, 'users')
-        if(query.rowCount == 0) throw new AppError(403, 'Cannot Delete user now!')
+        crudFactory.delete(req, 'users')
         return Report(200, "User Deleted!", res)
 }
 
