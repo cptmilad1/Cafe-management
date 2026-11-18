@@ -63,7 +63,7 @@ function deleteOrderItems(req, res){
 function patchOrderItems(req, res){
     const validArgs = ['product_name', 'quantity', 'unit_price', 'notes']
     validatorColumns(JSON.stringify(req.body), validArgs)
-    crudFactory.patch(req, 'order_items')
+    crudFactory.put(req, 'order_items')
     return Report(200, "Changes Applied!", res)
 }
 
