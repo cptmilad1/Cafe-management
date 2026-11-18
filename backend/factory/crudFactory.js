@@ -103,20 +103,6 @@ const crudFactory = {
         const query = await pool.query(`DELETE FROM ${tableName} WHERE id=$1`, [id])
         dataInject(query)
         return query
-    },
-    patch : async(req, tableName)=>{
-        validateTableName(tableName)
-        const {id} = req.params
-        validateId(id)
-        const entries = getEntries(req.body)
-        const keys = entries.map(([key])=>key)
-        const values = entries.map(([, value])=>value)
-        values.push(id)
-        const updates = keys.map((key, index)=>`${key}=$${index+1}`).join(", ")
-        const query = `UPDATE ${tableName} SET ${updates} WHERE id=$${values.length}`
-        const result = await pool.query(query, values)
-        dataInject(result)
-        return result
     }
 }
 

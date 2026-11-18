@@ -37,7 +37,7 @@ async function deleteTable(req,res) {
 async function changeTableStatus(req,res) {
         const {status} = req.body
         validatorColumns(status, ['available', 'occupied', 'reserved', 'inactive'])
-        crudFactory.patch(req, 'cafe_tables')
+        crudFactory.put(req, 'cafe_tables')
         return Report(200, "Status changed!", res)
 }
 

@@ -47,7 +47,7 @@ function patchOrder(req, res){
     const allowedItems = ["order_type", "status", "payment_status", "discount", "notes"]
     if(!allowedItems.includes(keys))
         throw new AppError(403, 'Invalid data!')
-    crudFactory.patch(req, 'orders')
+    crudFactory.put(req, 'orders')
     return Report(200, 'Order changed!', res)
 }
 
