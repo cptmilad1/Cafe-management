@@ -56,5 +56,5 @@ async function refreshToken(req, res, next) {
 module.exports = {
     signIn,
     signUp,
-    
+    refreshToken
 }
