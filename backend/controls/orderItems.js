@@ -33,13 +33,16 @@ async function getOneOrderItems(req,res) {
 
 
 async function addOrderItems(req,res) {
-    const {order_name, product_name, quantity, unit_price, line_total, notes} = req.body
-    const orderId = (await crudFactory.getOneByName(order_name, 'orders')).rows[0].map((order)=>order.id)
+    const {product_name, quantity, unit_price, line_total, notes, table_id, tax, discount} = req.body
+    const customer_id = await pool.query(`INSERT INTO customer RETURNNING *`)
     const productId = (await crudFactory.getOneByName(product_name, 'products')).rows[0].map((product)=>product.id)
     const query = await pool.query(`INSERT INTO order_items 
-        (order_id, product_id, product_name, quantity, unit_price, line_total, notes)
-        VALUES('$1', '$2', '$3', '$4', '$5', '$6', '$7')
-        `, [orderId, productId, product_name, quantity, unit_price, line_total, notes])
+        (customer_id, product_id, product_name, quantity, unit_price, line_total, notes)
+        VALUES('$1', '$2', '$3', '$4', '$5', '$6', '$7') RETURNNING id;
+        `, [customer_id, productId, product_name, quantity, unit_price, line_total, notes])
+    const subtotal = pool.query(`SELECT COALESCE(SUM(quantity * unit_price), 0) AS subtotal FROM order_items WHERE customer_id=$1`, [customer_id])
+    const order = await pool.query(`INSERT INTO orders (order_items_id, table_id, subtotal, tax, discount)
+        VALUES ('$8', '$9', '$10', '$11') RETURNNING id`, [query.id , table_id, subtotal, tax, discount])
     if(query.rowCount == 0) throw new AppError(404, "Cannot save order now!")
     return Report(200, "An Order item Saved!", res)
 }
