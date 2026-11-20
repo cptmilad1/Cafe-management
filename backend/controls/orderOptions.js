@@ -23,13 +23,6 @@ function getOneOrder(req, res){
     return Report(200, 'Data fetched!', query, res)
 }
 
-function addOrder(req,res) {
-    const {order_type, status, payment_status} = req.body
-    Validator(order_type, status, payment_status)
-    crudFactory.post(req, 'orders')
-    return Report(201, 'Order Added!', res)
-}
-
 function editOrder(req, res){
     const {order_type, status, payment_status} = req.body
     Validator(order_type, status, payment_status)
