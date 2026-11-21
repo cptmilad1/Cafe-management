@@ -1,8 +1,13 @@
-const AppError = require("./appError")
+const AppError = require('./appError')
 
-function validatorColumns (params, args){
+function validatorColumns(params, args) {
     const validInputs = [...args]
-    if(!params.includes(validInputs))
-        throw new AppError(404, "Invalid Data!")
+    const values = Array.isArray(params) ? params : [params]
+
+    for (const value of values) {
+        if (value !== undefined && value !== null && !validInputs.includes(value))
+            throw new AppError(400, 'Invalid Data!')
+    }
+    return true
 }
 module.exports = validatorColumns

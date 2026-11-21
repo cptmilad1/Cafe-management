@@ -1,3 +1,3 @@
-CREATE TABLE customer (
+CREATE TABLE IF NOT EXISTS customer (
     id SERIAL PRIMARY KEY
-)
+);

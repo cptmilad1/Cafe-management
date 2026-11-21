@@ -1,4 +1,4 @@
-function Nexter(req, res, next){
+function Nexter(req, res, next) {
     next()
 }
-export default Nexter
+module.exports = Nexter

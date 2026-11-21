@@ -1,51 +1,49 @@
-const pool = require('../../database/base/pool')
 const Report = require('../utils/reportSenter')
 const AppError = require('../utils/appError')
 const crudFactory = require('../factory/crudFactory')
 
-function validator (name, category_id, price, is_available, code){
-    if(
-            name == null ||
-            name == undefined ||
-            name == '' && 
-            category_id <= 0 ||
-            category_id == null ||
-            category_id == undefined &&
-            price <= 0 ||
-            price == null ||
-            price == undefined &&
-            is_available !== (true || false)
-        ) throw new AppError(code, "Please Enter valid parameters for Produt!")
+function validator(body, requireAll = false) {
+    const { name, category_id, price, is_available } = body
+
+    if (requireAll && (!name || !String(name).trim()))
+        throw new AppError(400, 'Please provide a valid product name!')
+    if (name !== undefined && (typeof name !== 'string' || !name.trim()))
+        throw new AppError(400, 'Please provide a valid product name!')
+    if (category_id !== undefined && (!Number.isInteger(Number(category_id)) || Number(category_id) <= 0))
+        throw new AppError(400, 'Please provide a valid category id!')
+    if (requireAll && (price === undefined || price === null || price === ''))
+        throw new AppError(400, 'Please provide a valid price!')
+    if (price !== undefined && (!Number.isFinite(Number(price)) || Number(price) < 0))
+        throw new AppError(400, 'Please provide a valid price!')
+    if (is_available !== undefined && typeof is_available !== 'boolean')
+        throw new AppError(400, 'Please provide a valid availability status!')
 }
 
-
-function getAllProducts(req,res) {
-    const query = crudFactory.get('products')
-    return Report(200, "Product Data Fetched", query, res)
+async function getAllProducts(req, res) {
+    const products = await crudFactory.get('products')
+    return Report(200, 'Product Data Fetched', products, res)
 }
 
-function getOneProduct(req,res) {
-    const query = crudFactory.getOne(req, 'products')
-    return Report(200, "Product Fetched!", query, res)
+async function getOneProduct(req, res) {
+    const product = await crudFactory.getOne(req, 'products')
+    return Report(200, 'Product Fetched!', product, res)
 }
 
-function addProduct(req,res) {
-    const {category_id, name, price, is_available} = req.body
-        validator(name, category_id, price, is_available, 404)
-        crudFactory.post(req, 'products')
-        return Report(201, "Product added!", res)
-}
-    
-function editProduct(req,res) {
-        const {category_id, name, price, is_available} = req.body
-        validator(name, category_id, price, is_available, 400)
-        crudFactory.put(req, 'products')
-        return Report(201, "Product Added", res)
+async function addProduct(req, res) {
+    validator(req.body, true)
+    const product = await crudFactory.post(req, 'products')
+    return Report(201, 'Product added!', product, res)
 }
 
-function deleteProduct(req,res) {
-    crudFactory.delete(req, 'products')
-    return Report(200, "Product deleted!", res)
+async function editProduct(req, res) {
+    validator(req.body)
+    const product = await crudFactory.put(req, 'products')
+    return Report(200, 'Product Updated!', product, res)
 }
 
-module.exports = {getAllProducts, getOneProduct, addProduct, editProduct, deleteProduct}
+async function deleteProduct(req, res) {
+    const product = await crudFactory.delete(req, 'products')
+    return Report(200, 'Product deleted!', product, res)
+}
+
+module.exports = { getAllProducts, getOneProduct, addProduct, editProduct, deleteProduct }

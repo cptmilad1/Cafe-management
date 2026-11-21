@@ -1,16 +1,18 @@
 require('dotenv').config()
 const jwt = require('jsonwebtoken')
-const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret_key"
+const getToken = require('../utils/getToken')
+const AppError = require('../../utils/appError')
 
-function Authenticator(req,res,next){
+const JWT_SECRET = process.env.JWT_SECRET || 'my_super_secret_key'
+
+function Authenticator(req, res, next) {
     try {
-        const token = req.cookies.token;
-        if (!token) return Errors(401, "ReLogin required", res);
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;
-        next();
+        const token = getToken(req)
+        if (!token) return next(new AppError(401, 'ReLogin required'))
+        req.user = jwt.verify(token, JWT_SECRET)
+        next()
     } catch (err) {
-        next(err);
+        next(err)
     }
 }
-module.exports = Authenticator;
+module.exports = Authenticator
