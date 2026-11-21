@@ -1,50 +1,46 @@
 const Report = require('../utils/reportSenter')
-const AppError = require('../utils/appError')
 const crudFactory = require('../factory/crudFactory')
 const validatorColumns = require('../utils/validBodyColumns')
 
-function getTables(req,res) {
-        const query = crudFactory.get('cafe_tables')
-        const tables = query.map((tables)=> ({
-                id : tables.id,
-                name : tables.name,
-                capacity : tables.capacity,
-                status : tables.status,
-                updated_at : tables.updated_at
-        }))
-        if(query.rowCount == 0) throw new AppError(404, "Can not sent tables details now!")
-        return Report(200, "Tables info Fetched!", {tables}, res)
+const validStatuses = ['available', 'occupied', 'reserved', 'inactive']
+
+function validateStatus(status) {
+    validatorColumns(status, validStatuses)
 }
 
-function addTable(req,res) {
-        const {status} = req.body
-        validatorColumns(status, ['available', 'occupied', 'reserved', 'inactive'])
-        crudFactory.post(req, 'cafe_tables')
-        return Report(201, "Table added!", res)
+async function getTables(req, res) {
+    const rows = await crudFactory.get('cafe_tables')
+    const tables = rows.map((table) => ({
+        id: table.id,
+        name: table.name,
+        capacity: table.capacity,
+        status: table.status,
+        updated_at: table.updated_at
+    }))
+    return Report(200, 'Tables info Fetched!', tables, res)
 }
 
-async function editTable(req,res) {
-        const {status} = req.body
-        validatorColumns(status, ['available', 'occupied', 'reserved', 'inactive'])
-        crudFactory.put(req, 'cafe_tables')
-        return Report(201, "Table Updated!", res)
+async function addTable(req, res) {
+    validateStatus(req.body.status)
+    const table = await crudFactory.post(req, 'cafe_tables')
+    return Report(201, 'Table added!', table, res)
 }
 
-async function deleteTable(req,res) {
-        crudFactory.delete(req, 'cafe_tables')
-        return Report(200, "Table Deleted!", res)
-}
-async function changeTableStatus(req,res) {
-        const {status} = req.body
-        validatorColumns(status, ['available', 'occupied', 'reserved', 'inactive'])
-        crudFactory.put(req, 'cafe_tables')
-        return Report(200, "Status changed!", res)
+async function editTable(req, res) {
+    validateStatus(req.body.status)
+    const table = await crudFactory.put(req, 'cafe_tables')
+    return Report(200, 'Table Updated!', table, res)
 }
 
-module.exports = {
-    getTables,
-    editTable,
-    deleteTable,
-    addTable,
-    changeTableStatus
+async function deleteTable(req, res) {
+    const table = await crudFactory.delete(req, 'cafe_tables')
+    return Report(200, 'Table Deleted!', table, res)
 }
+
+async function changeTableStatus(req, res) {
+    validateStatus(req.body.status)
+    const table = await crudFactory.put(req, 'cafe_tables')
+    return Report(200, 'Status changed!', table, res)
+}
+
+module.exports = { getTables, editTable, deleteTable, addTable, changeTableStatus }

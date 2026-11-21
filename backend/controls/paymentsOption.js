@@ -1,30 +1,29 @@
-const pool = require('../../database/base/pool')
 const Report = require('../utils/reportSenter')
 const crudFactory = require('../factory/crudFactory')
 
-function getPayment(req, res){
-    const peyments = crudFactory.get('payments')
-    return Report(200, "Data Fetched!", {peyments}, res)
+async function getPayment(req, res) {
+    const payments = await crudFactory.get('payments')
+    return Report(200, 'Data Fetched!', payments, res)
 }
 
-function getOnePayment(req, res){
-    crudFactory.getOne(req, 'payments')
-    return Report(200, 'data fetched!', res)
+async function getOnePayment(req, res) {
+    const payment = await crudFactory.getOne(req, 'payments')
+    return Report(200, 'data fetched!', payment, res)
 }
 
-function addPayment(req, res){
-    crudFactory.post(req, 'payments')
-    return Report(201, "Payment Added!", res)
+async function addPayment(req, res) {
+    const payment = await crudFactory.post(req, 'payments')
+    return Report(201, 'Payment Added!', payment, res)
 }
 
-function editPayment(req, res){
-    crudFactory.put(req, 'payments')
-    return Report(200, "payment edited!", res)
+async function editPayment(req, res) {
+    const payment = await crudFactory.put(req, 'payments')
+    return Report(200, 'payment edited!', payment, res)
 }
 
-function deletePayment(req, res){
-    crudFactory.delete(req, 'payments')
-    return Report(200, "Payment deleted!", res)
+async function deletePayment(req, res) {
+    const payment = await crudFactory.delete(req, 'payments')
+    return Report(200, 'Payment deleted!', payment, res)
 }
 
-module.exports = {getPayment, getOnePayment, addPayment, editPayment, deletePayment}
+module.exports = { getPayment, getOnePayment, addPayment, editPayment, deletePayment }

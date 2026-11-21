@@ -1,17 +1,9 @@
-const jwt = require("jsonwebtoken");
-const Errors = require("../middleware/sentError");
-const JWT_SECRET = process.env.JWT_SECRET || "my_super_secret_key";
+const AppError = require('../../utils/appError')
 
-async function CheckRole(req, res, next) {
-    try {
-        const token = req.cookies.token;
-        if (!token) return Errors(401, "Access denied. No token provided.", res);
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;
-        if (req.user.role !== 'admin') return Errors(403, "Access denied. You do not have permission to perform this action.", res);
-        next();
-    } catch (err) {
-        next(err);
-    }
+function CheckRole(req, res, next) {
+    if (!req.user) return next(new AppError(401, 'ReLogin required'))
+    if (req.user.role !== 'admin')
+        return next(new AppError(403, 'Access denied. You do not have permission to perform this action.'))
+    next()
 }
-module.exports = CheckRole;
+module.exports = CheckRole

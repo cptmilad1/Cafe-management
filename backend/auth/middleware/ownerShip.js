@@ -1,10 +1,10 @@
-const Report = require("../../utils/reportSenter")
+const AppError = require('../../utils/appError')
 
-function OwnerShip(userRole){
-    return function (req,res,next){
-        if(req.user.role !== userRole || req.user.id !== req.params.id)
-            return Report(403, "Access Denied!", res)
-        next()
-    }
+function OwnerShip(req, res, next) {
+    if (!req.user) return next(new AppError(401, 'ReLogin required'))
+    const isOwner = String(req.user.id) === String(req.params.id)
+    if (!isOwner && req.user.role !== 'admin')
+        return next(new AppError(403, 'Access Denied!'))
+    next()
 }
 module.exports = OwnerShip

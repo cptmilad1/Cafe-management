@@ -1,45 +1,40 @@
-const pool = require('../../database/base/pool')
-const AppError = require('../utils/appError')
 const Report = require('../utils/reportSenter')
+const AppError = require('../utils/appError')
 const crudFactory = require('../factory/crudFactory')
 
-
-function getAllCategories(req,res) {
-    const query = crudFactory.get('categories')
-    return Report(200, "data fetched", query, res)
+function validateActive(is_active) {
+    if (is_active !== undefined && typeof is_active !== 'boolean')
+        throw new AppError(400, 'Category activation status is not valid!')
 }
 
-function categotyFilter(req,res) {
-    const {filterName} = req.body
-    const query = crudFactory.getOneByName(filterName, 'categories')
-    return Report(200, "data fetched", query, res)
+async function getAllCategories(req, res) {
+    const categories = await crudFactory.get('categories')
+    return Report(200, 'Data fetched', categories, res)
 }
 
-async function addCategory(req,res) {
-    const {is_active} = req.body
-    const validActive = [true, false]
-    if(!is_active.includes(validActive)) throw new AppError(404, "Category Activition Status parameters is not valid!")
-    const query = crudFactory.post(req, 'categories')
-    return Report(201, 'Category created!', res)
+async function categotyFilter(req, res) {
+    const name = req.body.filterName || req.query.filterName
+    const category = name
+        ? await crudFactory.getOneByName(name, 'categories')
+        : await crudFactory.getOneById(req.params.id, 'categories')
+    return Report(200, 'Data fetched', category, res)
 }
 
-async function editCategory(req,res) {
-    const {is_active} = req.body
-    const validActive = [true, false]
-    if(!is_active.includes(validActive)) throw new AppError(404, "Category Activition Status not valid!")
-    crudFactory.put(req, 'categories')
-    return Report(201, 'Category Updated!', res)
+async function addCategory(req, res) {
+    validateActive(req.body.is_active)
+    const category = await crudFactory.post(req, 'categories')
+    return Report(201, 'Category created!', category, res)
 }
 
-async function deleteCtegory(req,res) {
-    crudFactory.delete(req, 'categories')
-    return Report(200, "Category successfully Deleted!", res)
+async function editCategory(req, res) {
+    validateActive(req.body.is_active)
+    const category = await crudFactory.put(req, 'categories')
+    return Report(200, 'Category Updated!', category, res)
 }
 
-module.exports = {
-    getAllCategories,
-    categotyFilter,
-    editCategory,
-    deleteCtegory,
-    addCategory
+async function deleteCtegory(req, res) {
+    const category = await crudFactory.delete(req, 'categories')
+    return Report(200, 'Category successfully Deleted!', category, res)
 }
+
+module.exports = { getAllCategories, categotyFilter, editCategory, deleteCtegory, addCategory }
