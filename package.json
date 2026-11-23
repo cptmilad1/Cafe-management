@@ -9,7 +9,7 @@
   "scripts": {
     "test": "node --test backend/__tests__",
     "start": "node backend/server/server.js",
-    "dev": "node --watch backend/server/server.js",
+    "dev": "concurrently \"npm run dev --prefix FrontEnd\" \"npm run dev --prefix BackEnd\"",
     "db:schema": "node database/schema/run.js"
   },
   "keywords": [],
@@ -18,6 +18,7 @@
   "type": "commonjs",
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "concurrently": "^10.0.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.1.0",
@@ -25,6 +26,16 @@
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.13.1",
     "socket.io": "^4.8.1",
-    "zod": "^4.6.7"
-  }
+    "zod": "^4.6.7",
+    "zustand": "^5.1.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cptmilad1/Cafe-management.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cptmilad1/Cafe-management/issues"
+  },
+  "homepage": "https://github.com/cptmilad1/Cafe-management#readme"
 }

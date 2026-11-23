@@ -1,8 +1,8 @@
-const pool = require('../../database/base/pool')
+const pool = require('../utils/pool')
 const AppError = require('../utils/appError')
 
 const tableColumns = {
-    users: ['full_name', 'email', 'password_hash', 'role', 'is_active'],
+    users: ['full_name', 'email', 'password_hash', 'is_active'],
     categories: ['name', 'description', 'is_active'],
     products: ['category_id', 'name', 'description', 'sku', 'price', 'is_available'],
     cafe_tables: ['name', 'capacity', 'status'],
