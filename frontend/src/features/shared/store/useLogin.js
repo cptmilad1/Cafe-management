@@ -1,5 +1,7 @@
 import { create } from "zustand";
 
 const useLogin = create((set)=>({
-   login : true  
+   user: null,
+   loading: false,
+   login: true  
 }))
