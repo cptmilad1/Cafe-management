@@ -1,1 +1,5 @@
 @import "tailwindcss";
+@font-face {
+    font-family: cafe_font;
+    src: url(/fonts/ShantellSans-Italic-VariableFont_BNCE\,INFM\,SPAC\,wght.ttf);
+}
