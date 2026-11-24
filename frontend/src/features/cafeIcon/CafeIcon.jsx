@@ -1,7 +1,9 @@
 import { SiCoffeescript } from "react-icons/si";
 import { CiMenuFries } from "react-icons/ci";
+import { useState } from "react";
 
 function CafeIcon() {
+  const [modal, setModal] = useState(false)
   return (
     <div className="flex gap-5 p-2 items-center justify-between w-full">
         <div className="flex gap-4 items-center">
